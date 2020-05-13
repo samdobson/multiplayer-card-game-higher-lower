@@ -8,13 +8,15 @@ var gameOptions = {
 }
 window.onload = function() {
     game = new Phaser.Game(gameOptions.gameWidth, gameOptions.gameHeight);
-    game.state.add("PlayGame", playGame);
+    game.state.add("PlayGame", playGame)
     game.state.start("PlayGame");
 }
 var playGame = function(game) {}
 playGame.prototype = {
     preload: function() {
-        game.load.spritesheet("cards", "cards.png", gameOptions.cardSheetWidth, gameOptions.cardSheetHeight);
+        for(var i = 0; i < 10; i++){
+            game.load.spritesheet("cards" + i, "cards" + i + ".png", gameOptions.cardSheetWidth, gameOptions.cardSheetHeight);
+        }
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         game.scale.pageAlignHorizontally = true;
         game.scale.pageAlignVertically = true;
@@ -31,11 +33,18 @@ playGame.prototype = {
         game.input.onDown.add(this.beginSwipe, this);
     },
     makeCard: function(cardIndex) {
-        var card = game.add.sprite(gameOptions.cardSheetWidth * gameOptions.cardScale / -2, game.height / 2, "cards");
+        var card = game.add.sprite(gameOptions.cardSheetWidth * gameOptions.cardScale / -2, game.height / 2, "cards0");
         card.anchor.set(0.5);
         card.scale.set(gameOptions.cardScale);
-        card.frame = this.deck[cardIndex];
+        card.loadTexture("cards" + this.getCardTexture(this.deck[cardIndex]));
+        card.frame = this.getCardFrame(this.deck[cardIndex]);
         return card;
+    },
+    getCardTexture: function(cardValue){
+        return Math.floor((cardValue % 13) / 3) + 5 * Math.floor(cardValue / 26);
+    },
+    getCardFrame: function(cardValue){
+        return (cardValue % 13) % 3 + 3 * (Math.floor(cardValue / 13) % 2);
     },
     beginSwipe: function(e) {
         game.input.onDown.remove(this.beginSwipe, this);
@@ -79,7 +88,8 @@ playGame.prototype = {
         }, 500, Phaser.Easing.Cubic.Out, true);
         moveDownTween.onComplete.add(function() {
             var cardToMove = this.nextCardIndex % 2
-            this.cardsInGame[cardToMove].frame = this.deck[this.nextCardIndex];
+            this.cardsInGame[cardToMove].loadTexture("cards" + this.getCardTexture(this.deck[this.nextCardIndex]));
+            this.cardsInGame[cardToMove].frame = this.getCardFrame(this.deck[this.nextCardIndex]);
             this.nextCardIndex = (this.nextCardIndex + 1) % 52;
             this.cardsInGame[cardToMove].x = gameOptions.cardSheetWidth * gameOptions.cardScale / -2;
             game.input.onDown.add(this.beginSwipe, this);

@@ -1,2 +1,3 @@
-# multiplayer-card-game-higher-lower
+# A simple card game created with Phasar
  
+Write-up to come...
